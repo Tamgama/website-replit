@@ -1,0 +1,92 @@
+# Proyecto: Integración de Datos Públicos a Tiempo Real para CRM Inmobiliario
+
+import requests
+import xml.etree.ElementTree as ET
+
+# ------------------------------
+# 1. Obtener inmuebles desde coordenadas
+# ------------------------------
+def obtener_inmuebles_por_coordenadas(lat, lon):
+    try:
+        url = f"https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCoordenadas.asmx/Consulta_RCCOOR?SRS=EPSG:4326&Coordenada_X={lon}&Coordenada_Y={lat}"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        resp = requests.get(url, headers=headers, timeout=10)
+
+        if resp.status_code != 200:
+            return {"error": f"Error HTTP {resp.status_code} al acceder al Catastro"}
+
+        tree = ET.fromstring(resp.content)
+        inmuebles = []
+
+        for parcela in tree.findall(".//lrc"):
+            refcat = parcela.findtext("rc", default="N/A")
+            direccion = parcela.findtext("ldt", default="N/D")
+            cp = parcela.findtext("cp", default="N/D")
+            municipio = parcela.findtext("nm", default="N/D")
+            provincia = parcela.findtext("np", default="N/D")
+
+            inmuebles.append({
+                "Referencia Catastral": refcat,
+                "Dirección": direccion,
+                "CP": cp,
+                "Municipio": municipio,
+                "Provincia": provincia
+            })
+
+        return inmuebles if inmuebles else {"error": "No se encontraron inmuebles"}
+
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Error de red: {str(e)}"}
+    except ET.ParseError:
+        return {"error": "Error al analizar la respuesta XML del Catastro"}
+
+# ------------------------------
+# 2. Simulación de detalles de inmueble
+# ------------------------------
+def obtener_detalle_inmueble(refcat):
+    # Esto será reemplazado por scraping/API real si se permite la conexión
+    return {
+        "Referencia Catastral": refcat,
+        "Localización": "Calle Falsa 123, Murcia",
+        "Clase Urbano": "Urbano",
+        "Uso Principal": "Residencial",
+        "Superficie Construida (m2)": "95",
+        "Año Construcción": "2002"
+    }
+
+# ------------------------------
+# 3. Test Cases
+# ------------------------------
+def test_obtener_inmuebles_por_coordenadas():
+    resultado = obtener_inmuebles_por_coordenadas("37.9871", "-1.1306")
+    assert isinstance(resultado, (list, dict))
+    if isinstance(resultado, list):
+        for item in resultado:
+            assert "Referencia Catastral" in item
+
+def test_obtener_detalle_inmueble():
+    detalle = obtener_detalle_inmueble("1234567AB1234C0001XY")
+    assert isinstance(detalle, dict)
+    for campo in [
+        "Referencia Catastral", "Localización", "Clase Urbano",
+        "Uso Principal", "Superficie Construida (m2)", "Año Construcción"
+    ]:
+        assert campo in detalle
+
+# ------------------------------
+# 4. Ejecución práctica
+# ------------------------------
+if __name__ == "__main__":
+    print("--- Buscar inmuebles por coordenadas ---")
+    inmuebles = obtener_inmuebles_por_coordenadas("37.9871", "-1.1306")
+    print(inmuebles)
+
+    if isinstance(inmuebles, list) and inmuebles:
+        print("--- Detalle del primer inmueble ---")
+        detalle = obtener_detalle_inmueble(inmuebles[0]['Referencia Catastral'])
+        print(detalle)
+
+    print("--- Ejecutando pruebas ---")
+    test_obtener_inmuebles_por_coordenadas()
+    test_obtener_detalle_inmueble()
+    print("✔ Todas las pruebas pasaron correctamente.")

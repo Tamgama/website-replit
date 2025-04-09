@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Valoración de Inmuebles</title>
+    <style>
+      /* 
+        -- ESTILOS PERSONALIZADOS --
+        Puedes ajustar colores, tipografía, espaciados, etc. para que
+        luzca como un desarrollo interno y no como un widget externo.
+      */
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      header {
+        background: #f5f5f5;
+        padding: 20px;
+        text-align: center;
+      }
+
+      header h1 {
+        margin: 0 0 10px 0;
+      }
+
+      header p {
+        margin: 0;
+        color: #666;
+      }
+
+      .content {
+        max-width: 700px;
+        margin: 30px auto;
+        padding: 0 15px;
+      }
+
+      /* 
+        Este contenedor es donde data venues inyectará 
+        el "formulario", pero con tu estilo.
+      */
+      #mi-valoracion {
+        border: 1px solid #ddd;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-radius: 4px;
+      }
+
+      /* 
+        Puedes agregar más clases personalizadas dentro 
+        del formulario integrado de data venues. 
+        Ajusta según te convenga.
+      */
+
+      footer {
+        background: #f5f5f5;
+        text-align: center;
+        padding: 20px;
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ENCABEZADO PERSONALIZADO -->
+    <header>
+      <h1>Valoración de tu Vivienda</h1>
+      <p>Descubre el precio estimado de tu inmueble en minutos</p>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="content">
+      <!-- 
+        Div con ID personalizado: "mi-valoracion".
+        Aquí data venues incrusta su tecnología internamente
+        pero con tu estilo y sin aspecto de widget.
+      -->
+      <div id="mi-valoracion"></div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <footer>
+      <p>© 2025 - Tu sitio web</p>
+    </footer>
+
+    <!-- 
+      SCRIPT DE DATA VENUES 
+      Se encarga de inyectar el formulario de valoración en el div "mi-valoracion".
+      Paramétralo con tu token y la configuración que necesites.
+      
+      - tkn=... => tu token (imprescindible)
+      - target=mi-valoracion => ID del contenedor donde se monta el formulario
+      - locale=es => idioma
+      - color=%23FFAB00 => color principal (en hex con %23)
+      - alt => pide datos de contacto antes de mostrar la valoración
+    -->
+    <script 
+      src="https://app.data venues.com/js/data venues.js
+      ?tkn=0195ccfb-f469-7b88-90bf-abbeb5604dfd
+      &target=mi-valoracion
+      &locale=es
+      &color=%23FFAB00
+      &alt">
+    </script>
+  </body>
+</html>

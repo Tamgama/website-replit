@@ -1,0 +1,81 @@
+A continuación te dejo un ejemplo de código HTML que integra el formulario de valoración con la configuración “avanzada” de data venues. Usa el token que nos indica, incluye el altpara pedir datos de contacto, fuerza el idioma a español ( locale=es), el color principal (en hexadecimal) y asigna el objetivo (el divdonde se mostrará el formulario). Ajusta los valores según tus necesidades:
+
+html
+
+Copiar
+
+Editar
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Formulario de Valoración</title>
+    <!-- Aquí puedes agregar tu propio CSS para el diseño que desees -->
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      header, footer {
+        text-align: center;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>¿Cuánto vale mi casa en Vista Alegre?</h1>
+      <p>Valoración 100% gratuita de viviendas online en solo 3 minutos</p>
+    </header>
+
+    <div class="container">
+      <!-- 
+        Este div será el contenedor donde el script de data venues 
+        inyectará el formulario de valoración 
+      -->
+      <div id="dv-widget"></div>
+    </div>
+
+    <footer>
+      <p>© 2025 Tu Sitio Web</p>
+    </footer>
+
+    <!-- Script de data venues con parámetros avanzados -->
+    <!-- 
+      tkn=TOKEN_PROVEEDOR (tu token)
+      target=ID_DEL_DIV_DONDE_SE_MUESTRA
+      locale=es (idioma: es, en, fr)
+      color=#COLOR_EN_HEX (color principal del formulario)
+      alt (para habilitar la recolección de datos de contacto en el primer paso)
+    -->
+    <script src="https://app.data venues.com/js/data venues.js?tkn=0195ccfb-f469-7b88-90bf-abbeb5604dfd
+                  &target=dv-widget
+                  &locale=es
+                  &color=%23FFAB00
+                  &alt">
+    </script>
+  </body>
+</html>
+Explicación de los parámetros clave:
+tkn : tu token único (en tu caso: 0195ccfb-f469-7b88-90bf-abbeb5604dfd).
+
+target : el ID del diven el que se mostrará el formulario (en el ejemplo: dv-widget).
+
+configuración regional : el idioma del formulario. Puede ser es, en, fr, etc.
+
+color : el color primario del formulario en hexadecimal; por ejemplo, #FFAB00.
+
+Ojo : usa el formato de URL correcto (por ejemplo, %23FFAB00en la URL).
+
+alt : si se incluye, muestra el paso para solicitar datos de contacto en el formulario.
+
+Con esto deberías poder integrar el formulario dentro de tu sitio y personalizar tanto la apariencia (con CSS propio) como el comportamiento (usando los parámetros avanzados de data venues). ¡Ajusta los estilos y la estructura a tu gusto!
