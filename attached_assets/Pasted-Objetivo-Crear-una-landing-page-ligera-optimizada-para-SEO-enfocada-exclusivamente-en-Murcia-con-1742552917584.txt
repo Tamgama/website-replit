@@ -1,0 +1,70 @@
+Objetivo: Crear una landing page ligera, optimizada para SEO, enfocada exclusivamente en Murcia, con la estructura y palabras clave de realadvisor.es, pero adaptada a la marca promurcia.com. La página debe incluir solo dos pestañas: “Tasación” (principal) e “Iniciar Sesión”, y un espacio reservado para un widget de valoración futuro. El contenido debe generarse mediante tu API de OpenAI, con un tono experto, persuasivo y técnicamente impecable.
+
+Instrucciones para la IA:
+Estructura SEO y Palabras Clave:
+
+Título principal (H1): “Tasación de Vivienda Online en Murcia | Precisión Inmediata con Promurcia”
+
+Meta Descripción: “Obtén una valoración de tu casa en Murcia al instante con nuestro sistema experto. Promurcia utiliza inteligencia artificial y datos del mercado murciano para ofrecerte el precio exacto de tu vivienda. ¡Sin registros!”
+
+Palabras Clave Principales (integradas naturalmente):
+
+“Tasación vivienda Murcia”
+
+“Valorar mi casa Murcia”
+
+“Calcular precio piso Murcia”
+
+“Tasación online exacta Murcia”
+
+“Expertos en inmuebles Murcia”
+
+URL: promurcia.com/tasacion-vivienda-murcia
+
+Contenido para la Pestaña “Tasación”:
+
+Introducción:
+“¿Quieres saber cuánto vale tu vivienda en Murcia? Somos Promurcia, expertos en el mercado inmobiliario murciano. Con nuestra tecnología avanzada, combinamos datos en tiempo real de la región —desprecios de Alicante a Cartagena— con inteligencia artificial para ofrecerte una valoración precisa en 2 minutos. ¡Sin coste y sin compromiso!”
+
+Pasos para la Tasación (enumeración clara):
+
+“Indica la ubicación exacta de tu propiedad en Murcia” (destacar barrios clave: Centro, El Carmen, La Flota).
+
+“Describe las características de tu vivienda” (m², habitaciones, estado).
+
+“Recibe tu informe con precio de mercado, tendencias en Murcia y comparativas de zona”.
+
+CTA Principal: “Valora Tu Vivienda en Murcia Ahora →” (enlace al widget futuro).
+
+Beneficios Diferenciadores:
+
+“Analizamos 3.000+ datos del mercado murciano” (precios por m² en zonas como Murcia Norte o Sur).
+
+“Actualización diaria con transacciones reales de la Región de Murcia”.
+
+“Recomendaciones personalizadas para vender o alquilar en Murcia”.
+
+Tono y Estilo:
+
+Experto pero cercano: Ejemplo:
+“En Murcia, el precio de un piso en el Centro histórico puede variar un 15% frente a zonas nuevas como Juan Carlos I. Nuestro sistema detecta estas diferencias automáticamente”.
+
+Enfatizar lo Local: Usar referencias a municipios (Alcantarilla, Molina de Segura), tipos de vivienda típicos (cortijos, áticos en zonas turísticas) y datos económicos de la región.
+
+Confianza: Incluir frases como:
+“95% de precisión verificada por agentes inmobiliarios murcianos”.
+
+Diseño Ligero y Funcional:
+
+Cabecera: Logo de Promurcia + menú fijo con “Tasación” e “Iniciar Sesión”.
+
+Zona Widget (placeholder destacado): “Próximamente: Widget de Valoración Automática con IA para Murcia”.
+
+Optimización: Textos cortos, bullets, negritas para escaneo rápido.
+
+Integración con OpenAI:
+
+Prompt para la API:
+“Genera un texto persuasivo para una landing page de tasación en Murcia, usando las palabras clave [X]. Incluye: 1) Introducción con datos locales, 2) Pasos simplificados, 3) Llamada a acción urgente. Tono: experto en inmuebles murcianos, técnico pero claro”.
+
+Nota Final: Esta estructura prioriza la conversión, el SEO local y la escalabilidad (al añadir el widget). ¡Perfecta para posicionar Promurcia como líder en tasaciones online en Murcia! 🏡💻

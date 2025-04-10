@@ -1,4 +1,4 @@
-A continuación te dejo un ejemplo de código HTML que integra el formulario de valoración con la configuración “avanzada” de data venues. Usa el token que nos indica, incluye el altpara pedir datos de contacto, fuerza el idioma a español ( locale=es), el color principal (en hexadecimal) y asigna el objetivo (el divdonde se mostrará el formulario). Ajusta los valores según tus necesidades:
+A continuación te dejo un ejemplo de código HTML que integra el formulario de valoración con la configuración “avanzada” de Datavenues. Usa el token que nos indica, incluye el altpara pedir datos de contacto, fuerza el idioma a español ( locale=es), el color principal (en hexadecimal) y asigna el objetivo (el divdonde se mostrará el formulario). Ajusta los valores según tus necesidades:
 
 html
 
@@ -39,7 +39,7 @@ Editar
 
     <div class="container">
       <!-- 
-        Este div será el contenedor donde el script de data venues 
+        Este div será el contenedor donde el script de Datavenues 
         inyectará el formulario de valoración 
       -->
       <div id="dv-widget"></div>
@@ -49,7 +49,7 @@ Editar
       <p>© 2025 Tu Sitio Web</p>
     </footer>
 
-    <!-- Script de data venues con parámetros avanzados -->
+    <!-- Script de Datavenues con parámetros avanzados -->
     <!-- 
       tkn=TOKEN_PROVEEDOR (tu token)
       target=ID_DEL_DIV_DONDE_SE_MUESTRA
@@ -57,7 +57,7 @@ Editar
       color=#COLOR_EN_HEX (color principal del formulario)
       alt (para habilitar la recolección de datos de contacto en el primer paso)
     -->
-    <script src="https://app.data venues.com/js/data venues.js?tkn=0195ccfb-f469-7b88-90bf-abbeb5604dfd
+    <script src="https://app.datavenues.com/js/datavenues.js?tkn=0195ccfb-f469-7b88-90bf-abbeb5604dfd
                   &target=dv-widget
                   &locale=es
                   &color=%23FFAB00
@@ -78,4 +78,4 @@ Ojo : usa el formato de URL correcto (por ejemplo, %23FFAB00en la URL).
 
 alt : si se incluye, muestra el paso para solicitar datos de contacto en el formulario.
 
-Con esto deberías poder integrar el formulario dentro de tu sitio y personalizar tanto la apariencia (con CSS propio) como el comportamiento (usando los parámetros avanzados de data venues). ¡Ajusta los estilos y la estructura a tu gusto!
+Con esto deberías poder integrar el formulario dentro de tu sitio y personalizar tanto la apariencia (con CSS propio) como el comportamiento (usando los parámetros avanzados de Datavenues). ¡Ajusta los estilos y la estructura a tu gusto!

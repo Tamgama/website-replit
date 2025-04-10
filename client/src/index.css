@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Indicador de tiempo real */
+  .realtime-indicator {
+    @apply relative inline-flex items-center;
+  }
+  
+  .realtime-indicator::before {
+    content: "";
+    @apply block w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse;
+  }
+  
+  /* Variante para indicador a la derecha */
+  .realtime-indicator-right {
+    @apply relative inline-flex items-center;
+  }
+  
+  .realtime-indicator-right::after {
+    content: "";
+    @apply block w-1.5 h-1.5 bg-green-500 rounded-full ml-1.5 animate-pulse;
+  }
+}

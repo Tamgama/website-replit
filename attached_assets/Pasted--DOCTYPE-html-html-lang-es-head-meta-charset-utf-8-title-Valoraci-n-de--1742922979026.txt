@@ -38,7 +38,7 @@
       }
 
       /* 
-        Este contenedor es donde data venues inyectará 
+        Este contenedor es donde Datavenues inyectará 
         el "formulario", pero con tu estilo.
       */
       #mi-valoracion {
@@ -50,7 +50,7 @@
 
       /* 
         Puedes agregar más clases personalizadas dentro 
-        del formulario integrado de data venues. 
+        del formulario integrado de Datavenues. 
         Ajusta según te convenga.
       */
 
@@ -74,7 +74,7 @@
     <div class="content">
       <!-- 
         Div con ID personalizado: "mi-valoracion".
-        Aquí data venues incrusta su tecnología internamente
+        Aquí Datavenues incrusta su tecnología internamente
         pero con tu estilo y sin aspecto de widget.
       -->
       <div id="mi-valoracion"></div>
@@ -86,7 +86,7 @@
     </footer>
 
     <!-- 
-      SCRIPT DE DATA VENUES 
+      SCRIPT DE DATAVENUES 
       Se encarga de inyectar el formulario de valoración en el div "mi-valoracion".
       Paramétralo con tu token y la configuración que necesites.
       
@@ -97,7 +97,7 @@
       - alt => pide datos de contacto antes de mostrar la valoración
     -->
     <script 
-      src="https://app.data venues.com/js/data venues.js
+      src="https://app.datavenues.com/js/datavenues.js
       ?tkn=0195ccfb-f469-7b88-90bf-abbeb5604dfd
       &target=mi-valoracion
       &locale=es
