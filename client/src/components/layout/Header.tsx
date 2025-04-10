@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu } from "lucide-react";
 import { useMobileMenu } from "@/hooks/use-mobile-menu";
-import Logo from "./Logo";
 
 const Header = () => {
   const [location] = useLocation();
@@ -27,25 +26,25 @@ const Header = () => {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-3">
-          <Link 
+          {/* <Link 
             href="/valoracion"
             className="py-2 px-5 font-bold rounded-md transition-colors duration-200 bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
           >
             Valorar mi vivienda
-          </Link>
+          </Link> */}
           <Link 
             href="/login"
             className="py-2 px-3 font-medium text-gray-700 hover:text-blue-600 transition-colors border border-gray-300 rounded-md shadow-sm"
           >
             <span className="realtime-indicator-right">Área Cliente</span>
           </Link>
-          <Link 
+          {/* <Link 
             href="/ventas-secretas"
             className="py-2 px-3 font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center"
           >
             <span className="w-2 h-2 bg-blue-600 rounded-full mr-1"></span>
             Ventas Secretas
-          </Link>
+          </Link> */}
         </nav>
         
         {/* Mobile menu button */}

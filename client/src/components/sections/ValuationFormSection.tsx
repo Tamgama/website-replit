@@ -1,4 +1,4 @@
-import ValuationForm from "@/components/ValuationForm";
+import CustomValuationForm from "@/components/CustomValuationForm";
 import { useLocation } from "wouter";
 import { useState } from "react";
 
@@ -14,7 +14,7 @@ const ValuationFormSection = ({ showContactInfo = true }: ValuationFormSectionPr
   const handleValuationComplete = (valuationData: any) => {
     console.log("Valoración completada:", valuationData);
     setValuationComplete(true);
-    
+
     // Redirigir si tenemos ID de usuario
     if (valuationData.userId) {
       // Esperar un momento para que el usuario vea el mensaje de éxito
@@ -42,9 +42,9 @@ const ValuationFormSection = ({ showContactInfo = true }: ValuationFormSectionPr
           )}
           
           <div className="mb-10 bg-white p-6 rounded-lg shadow-lg">
-            {/* Formulario de valoración personalizado */}
-            <ValuationForm onValuationComplete={handleValuationComplete} />
-            
+            {/* Formulario de valoración personalizado con conexión al handler */}
+            <CustomValuationForm onValuationComplete={handleValuationComplete} />
+
             {valuationComplete && (
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <div className="text-center">

@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import Logo from "./Logo";
 
 const Footer = () => {
   return (

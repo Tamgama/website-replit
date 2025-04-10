@@ -12,6 +12,9 @@ import AerialView from "@/components/AerialView";
 import AddressAutocomplete from "./AddressAutocomplete";
 import { getParcelsByCoordinates, getBuildingsByParcelRC, CatastroParcel, CatastroBuilding } from "@/lib/catastro";
 
+interface CustomValuationFormProps {
+  onValuationComplete?: (data: any) => void;
+}
 // Schema para el formulario de valoración simplificado en pasos
 const addressSchema = z.object({
   address: z.string().min(3, { message: "La dirección es obligatoria" }),
@@ -20,20 +23,21 @@ const addressSchema = z.object({
 const propertyDetailsSchema = z.object({
   propertyType: z.string().min(1, { message: "El tipo de inmueble es obligatorio" }),
   size: z.string().min(1, { message: "El tamaño es obligatorio" }),
-  rooms: z.string().min(1, { message: "El número de habitaciones es obligatorio" }),
+  rooms: z.string().min(1, { message: "El número de rooms es obligatorio" }),
   banos: z.string().min(1, { message: "El número de baños es obligatorio" }),
   planta: z.string().min(1, { message: "La planta es obligatoria" }),
   puerta: z.string().min(1, { message: "La puerta es obligatoria" }),
-  tieneAscensor: z.boolean().default(false),
-  tieneGaraje: z.boolean().default(false),
-  hasElevator: z.boolean().default(false),
-  hasGarage: z.boolean().default(false),
-  condition: z.string().min(1, { message: "El estado es obligatorio" }),
+  condition: z.string().min(1, { message: "El condition es obligatorio" }),
+  yearBuilt: z.string().optional(),
+  hasElevator: z.boolean().optional(),
+  hasGarage: z.boolean().optional(),
+  hasPool: z.boolean().optional(),
+  hasTerrace: z.boolean().optional(),
 });
 
 const contactInfoSchema = z.object({
   name: z.string().min(2, { message: "El nombre es obligatorio" }),
-  phone: z.string().min(9, { message: "El teléfono debe tener al menos 9 dígitos" }),
+  phone: z.string().regex(/^[0-9]{9}$/, { message: "Introduce tu número de teléfono" }),
 });
 
 // Unimos los schemas para tener el esquema completo
@@ -52,7 +56,7 @@ enum FormStep {
 }
 
 const CustomValuationForm = () => {
-  // Definición de interfaces para el estado
+  // Definición de interfaces para el condition
   interface CatastroParcel {
     rc: string;
     area: string;
@@ -82,10 +86,10 @@ const CustomValuationForm = () => {
     tipo: string;
     direccion: string;
     superficie: string;
-    habitaciones: number;
+    rooms: number;
     banos: number;
-    anoContruccion?: string;
-    estado: string;
+    yearBuilt?: string;
+    condition: string;
     escalera?: string;
     planta?: string;
     puerta?: string;
@@ -94,7 +98,7 @@ const CustomValuationForm = () => {
     ultimaReforma?: string;
     orientacion?: string;
     tieneTrastero?: boolean;
-    tieneGaraje?: boolean;
+    hasGarage?: boolean;
     nivelRuido?: string;
     calidad?: string;
   }
@@ -114,8 +118,8 @@ const CustomValuationForm = () => {
     // Auto-rellenar los campos del formulario con los datos de esta propiedad
     propertyDetailsForm.setValue('propertyType', propiedad.tipo);
     propertyDetailsForm.setValue('size', propiedad.superficie);
-    propertyDetailsForm.setValue('rooms', propiedad.habitaciones.toString());
-    propertyDetailsForm.setValue('condition', propiedad.estado);
+    propertyDetailsForm.setValue('rooms', propiedad.rooms.toString());
+    propertyDetailsForm.setValue('condition', propiedad.condition);
     
     // Deshabilitar edición de los campos
     // (Esto se manejará en el renderizado)
@@ -143,11 +147,9 @@ const CustomValuationForm = () => {
       banos: "1",
       planta: "1",
       puerta: "A",
-      tieneAscensor: false,
-      tieneGaraje: false,
       hasElevator: false,
       hasGarage: false,
-      condition: "buen_estado",
+      condition: "buen_condition",
     },
   });
 
@@ -170,6 +172,10 @@ const CustomValuationForm = () => {
       const basePrice = 1200; // Precio base por metro cuadrado en Vista Alegre
       const size = parseInt(formData.size);
       const rooms = parseInt(formData.rooms);
+      const year = parseInt(formData.yearBuilt || "2000");
+      const currentYear = new Date().getFullYear();
+      const barrio = formData.address.toLowerCase();
+      const buildingAge = currentYear - year
       
       // Factores de ajuste según características
       const typeFactor = 
@@ -177,12 +183,16 @@ const CustomValuationForm = () => {
         formData.propertyType === "chalet" ? 1.3 : 
         formData.propertyType === "dúplex" ? 1.2 : 0.95;
       
-      const conditionFactor = 
-        formData.condition === "nuevo" ? 1.2 : 
-        formData.condition === "buen_estado" ? 1.0 : 
-        formData.condition === "reformar" ? 0.8 : 0.9;
+      let ageFactor = 1;
+        if (buildingAge < 5) ageFactor = 1.2;
+        else if (buildingAge < 15) ageFactor = 1.1;
+        else if (buildingAge > 40) ageFactor = 0.85;
+    
+      let conditionFactor = 1;
+        if (formData.condition === "excelente") conditionFactor = 1.15;
+        else if (formData.condition === "malo") conditionFactor = 0.8;
       
-      let estimatedValue;
+      let estimatedValue = basePrice * size * typeFactor * ageFactor * conditionFactor * (1 + 0.1 * rooms);
       
       // Si tenemos datos del catastro, usarlos para una estimación más precisa
       if (catastroData && catastroData.parcel && catastroData.building) {
@@ -310,7 +320,7 @@ const CustomValuationForm = () => {
       
       if (lat && lng) {
         // Consultar API de Catastro para obtener detalles completos
-        const response = await fetch(`/api/catastro/propiedades?lat=${lat}&lng=${lng}`);
+        const response = await fetch(`/api/catastro?lat=${lat}&lng=${lng}`);
         
         if (response.ok) {
           const data = await response.json();
@@ -362,7 +372,7 @@ const CustomValuationForm = () => {
       // Calcular la valoración
       const results = await calculateValuation(formData);
       
-      // Actualizar estado y mostrar resultados
+      // Actualizar condition y mostrar resultados
       setValuationResults(results);
       setStep(FormStep.Results);
     } catch (error) {
@@ -423,22 +433,22 @@ const CustomValuationForm = () => {
                     <div>
                       <h3 className="font-medium text-gray-900">{propiedad.direccion}</h3>
                       <p className="text-sm text-gray-600 mt-1">
-                        {propiedad.superficie} m² · {propiedad.habitaciones} habit. · {propiedad.banos} baños
+                        {propiedad.superficie} m² · {propiedad.rooms} habit. · {propiedad.banos} baños
                       </p>
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className={`inline-flex items-center px-2 py-1 text-xs rounded-full ${
-                          propiedad.estado === 'nuevo' 
+                          propiedad.condition === 'nuevo' 
                             ? 'bg-green-100 text-green-800' 
-                            : propiedad.estado === 'reformar' 
+                            : propiedad.condition === 'reformar' 
                               ? 'bg-amber-100 text-amber-800' 
                               : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {propiedad.estado === 'nuevo' ? 'Nuevo/Casi nuevo' : 
-                           propiedad.estado === 'reformar' ? 'Para reformar' : 'Buen estado'}
+                          {propiedad.condition === 'nuevo' ? 'Nuevo/Casi nuevo' : 
+                           propiedad.condition === 'reformar' ? 'Para reformar' : 'Buen condition'}
                         </span>
-                        {propiedad.anoContruccion && (
+                        {propiedad.yearBuilt && (
                           <span className="text-xs text-gray-500">
-                            Construido en {propiedad.anoContruccion}
+                            Construido en {propiedad.yearBuilt}
                           </span>
                         )}
                         {propiedad.eficienciaEnergetica && (
@@ -452,7 +462,7 @@ const CustomValuationForm = () => {
                             Efic. {propiedad.eficienciaEnergetica}
                           </span>
                         )}
-                        {propiedad.tieneGaraje && (
+                        {propiedad.hasGarage && (
                           <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                             Garaje
                           </span>
@@ -766,16 +776,16 @@ const CustomValuationForm = () => {
                   <div className="mt-4 border-t border-blue-100 pt-4">
                     <h4 className="font-medium text-blue-800 mb-3">Características:</h4>
                     
-                    {/* Habitaciones */}
+                    {/* rooms */}
                     <div className="mb-3">
-                      <label className="block text-sm text-gray-600 mb-1">Habitaciones:</label>
+                      <label className="block text-sm text-gray-600 mb-1">rooms:</label>
                       <div className="flex flex-wrap gap-2">
                         {[1, 2, 3, 4, 5].map((num) => (
                           <button
                             key={`hab-${num}`}
                             type="button"
                             className={`px-3 py-1 rounded text-sm ${
-                              propiedadSeleccionada.habitaciones === num
+                              propiedadSeleccionada.rooms === num
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                             }`}
@@ -783,7 +793,7 @@ const CustomValuationForm = () => {
                               // Actualizar la propiedad seleccionada con el nuevo valor
                               setPropiedadSeleccionada({
                                 ...propiedadSeleccionada,
-                                habitaciones: num
+                                rooms: num
                               });
                             }}
                           >
@@ -819,31 +829,31 @@ const CustomValuationForm = () => {
                       </div>
                     </div>
                     
-                    {/* Estado */}
+                    {/* condition */}
                     <div className="mb-3">
-                      <label className="block text-sm text-gray-600 mb-1">Estado:</label>
+                      <label className="block text-sm text-gray-600 mb-1">condition:</label>
                       <div className="flex flex-wrap gap-2">
                         {[
                           { id: 'nuevo', label: 'Nuevo/Casi nuevo' },
-                          { id: 'buen_estado', label: 'Buen estado' },
+                          { id: 'buen_condition', label: 'Buen condition' },
                           { id: 'reformar', label: 'Para reformar' }
-                        ].map((estado) => (
+                        ].map((condition) => (
                           <button
-                            key={`estado-${estado.id}`}
+                            key={`condition-${condition.id}`}
                             type="button"
                             className={`px-3 py-1 rounded text-sm ${
-                              propiedadSeleccionada.estado === estado.id
+                              propiedadSeleccionada.condition === condition.id
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                             }`}
                             onClick={() => {
                               setPropiedadSeleccionada({
                                 ...propiedadSeleccionada,
-                                estado: estado.id
+                                condition: condition.id
                               });
                             }}
                           >
-                            {estado.label}
+                            {condition.label}
                           </button>
                         ))}
                       </div>
@@ -891,7 +901,7 @@ const CustomValuationForm = () => {
                           { rango: '2011-2020', label: '10s' },
                           { rango: '2021-2025', label: 'Reciente' }
                         ].map((periodo) => {
-                          const anoActual = propiedadSeleccionada.anoContruccion || '2000';
+                          const anoActual = propiedadSeleccionada.yearBuilt || '2000';
                           const [inicio, fin] = periodo.rango.split('-').map(n => parseInt(n));
                           const estaEnRango = parseInt(anoActual) >= inicio && parseInt(anoActual) <= fin;
                           
@@ -909,7 +919,7 @@ const CustomValuationForm = () => {
                                 const nuevoAno = Math.floor((inicio + fin) / 2).toString();
                                 setPropiedadSeleccionada({
                                   ...propiedadSeleccionada,
-                                  anoContruccion: nuevoAno
+                                  yearBuilt: nuevoAno
                                 });
                               }}
                             >
@@ -1012,7 +1022,7 @@ const CustomValuationForm = () => {
                   name="rooms"
                   render={({ field }) => (
                     <FormItem className="mb-4">
-                      <FormLabel>Habitaciones</FormLabel>
+                      <FormLabel>rooms</FormLabel>
                       <FormControl>
                         <div className="flex flex-wrap gap-2">
                           {[1, 2, 3, 4, 5].map((num) => (
@@ -1070,25 +1080,25 @@ const CustomValuationForm = () => {
                   name="condition"
                   render={({ field }) => (
                     <FormItem className="mb-4">
-                      <FormLabel>Estado de la vivienda</FormLabel>
+                      <FormLabel>condition de la vivienda</FormLabel>
                       <FormControl>
                         <div className="flex flex-wrap gap-2">
                           {[
                             { id: "nuevo", label: "Nuevo" },
-                            { id: "buen_estado", label: "Buen estado" },
+                            { id: "buen_condition", label: "Buen condition" },
                             { id: "reformar", label: "Para reformar" }
-                          ].map((estado) => (
+                          ].map((condition) => (
                             <button
-                              key={`condition-${estado.id}`}
+                              key={`condition-${condition.id}`}
                               type="button"
                               className={`px-4 py-2 rounded-md ${
-                                field.value === estado.id
+                                field.value === condition.id
                                   ? 'bg-blue-600 text-white'
                                   : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                               }`}
-                              onClick={() => field.onChange(estado.id)}
+                              onClick={() => field.onChange(condition.id)}
                             >
-                              {estado.label}
+                              {condition.label}
                             </button>
                           ))}
                         </div>
@@ -1234,7 +1244,7 @@ const CustomValuationForm = () => {
                 <span className="font-medium">{valuationResults.size} m²</span>
               </li>
               <li className="flex justify-between py-1 border-b border-blue-100">
-                <span>Habitaciones:</span>
+                <span>rooms:</span>
                 <span className="font-medium">{valuationResults.rooms}</span>
               </li>
               
@@ -1265,7 +1275,7 @@ const CustomValuationForm = () => {
                   <li className="flex justify-between py-1 border-b border-blue-100">
                     <span>Año Construcción:</span>
                     <span className="font-medium">
-                      {valuationResults.catastroData.building.constructionYear || propiedadSeleccionada?.anoContruccion || "No disponible"}
+                      {valuationResults.catastroData.building.constructionYear || propiedadSeleccionada?.yearBuilt || "No disponible"}
                     </span>
                   </li>
                   
@@ -1313,10 +1323,10 @@ const CustomValuationForm = () => {
                     </li>
                   )}
                   
-                  {propiedadSeleccionada?.tieneGaraje !== undefined && (
+                  {propiedadSeleccionada?.hasGarage !== undefined && (
                     <li className="flex justify-between py-1 border-b border-blue-100">
                       <span>Garaje:</span>
-                      <span className="font-medium">{propiedadSeleccionada.tieneGaraje ? 'Sí' : 'No'}</span>
+                      <span className="font-medium">{propiedadSeleccionada.hasGarage ? 'Sí' : 'No'}</span>
                     </li>
                   )}
                   
