@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { Search, Building, Video } from "lucide-react";
 import AerialView from "@/components/AerialView";
 import AddressAutocomplete from "./AddressAutocomplete";
@@ -33,7 +34,7 @@ const propertyDetailsSchema = z.object({
 
 const contactInfoSchema = z.object({
   name: z.string().min(2, { message: "El nombre es obligatorio" }),
-  phone: z.string().min(9, { message: "El teléfono debe tener al menos 9 dígitos" }),
+  phone: z.string().regex(/^[0-9]{9}$/, { message: "Introduce tu número de teléfono" }),
 });
 
 // Unimos los schemas para tener el esquema completo
@@ -100,6 +101,8 @@ const CustomValuationForm = () => {
   }
   
   const [step, setStep] = useState<FormStep>(FormStep.Address);
+  const [, navigate] = useLocation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [valuationResults, setValuationResults] = useState<any>(null);
   const [catastroData, setCatastroData] = useState<CatastroDataState | null>(null);
   const [isLoadingCatastro, setIsLoadingCatastro] = useState<boolean>(false);
@@ -351,28 +354,58 @@ const CustomValuationForm = () => {
   };
 
   const onContactSubmit = async (data: ContactInfoFormValues) => {
+    setIsSubmitting(true);
     try {
-      // Combinar todos los datos del formulario
       const formData: ValuationFormValues = {
         address: addressForm.getValues().address,
         ...propertyDetailsForm.getValues(),
         ...data,
       };
-      
-      // Calcular la valoración
+  
       const results = await calculateValuation(formData);
-      
-      // Actualizar estado y mostrar resultados
+      let userId = 0;
+  
+      const checkRes = await fetch(`/api/users/phone/${data.phone}`);
+      const checkData = await checkRes.json();
+  
+      if (checkData.success && checkData.user) {
+        userId = checkData.user.id;
+        await fetch(`/api/users/${userId}/valuation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ valuationData: JSON.stringify(results) }),
+        });
+      } else {
+        const registerRes = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.name,
+            phone: data.phone,
+            role: "propietario",
+            last_valuation: JSON.stringify(results),
+          }),
+        });
+        const userData = await registerRes.json();
+        if (!userData.success) throw new Error("Error creando el usuario");
+        userId = userData.user.id;
+      }
+  
       setValuationResults(results);
-      setStep(FormStep.Results);
+      setStep(4);
+      navigate(`/valoracion-resultado/${userId}`);
     } catch (error) {
       toast({
         title: "Error en la valoración",
-        description: "No pudimos procesar tu solicitud. Por favor, inténtalo de nuevo.",
+        description: "No se pudo procesar tu solicitud",
         variant: "destructive",
       });
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+  
 
   // Función para volver al paso anterior
   const goBack = () => {

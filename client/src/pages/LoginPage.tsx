@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useLocation } from "wouter";
 
 const loginFormSchema = z.object({
-  phone: z.string().min(9, { message: "El número de teléfono debe tener al menos 9 dígitos" }),
+  phone: z.string().regex(/^[0-9]{9}$/, { message: "Introduce tu número de teléfono" }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
 });
 

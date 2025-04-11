@@ -3,7 +3,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import ValoracionPage from "@/pages/ValoracionPage";
-import CustomValuationPage from "@/pages/CustomValuationPage";
 import ValuationResultPage from "@/pages/ValuationResultPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
@@ -19,7 +18,6 @@ import Footer from "@/components/layout/Footer";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={CustomValuationPage} />
       <Route path="/valoracion-old" component={ValoracionPage} />
       <Route path="/valoracion-resultado/:userId" component={ValuationResultPage} />
       <Route path="/valoracion-resultado" component={ValuationResultPage} />
