@@ -91,6 +91,15 @@ const CustomValuationPage = () => {
           </div>
         </div>
       </div>
+
+      <footer className="bg-gray-50 py-6 text-center">
+        <p className="text-sm text-gray-600">© 2025 Promurcia Inmobiliarios</p>
+        <div className="flex justify-center mt-2 space-x-4 text-xs">
+          <a href="/privacidad" className="text-blue-600 hover:underline">Política de Privacidad</a>
+          <a href="/terminos" className="text-blue-600 hover:underline">Términos y Condiciones</a>
+          <a href="/cookies" className="text-blue-600 hover:underline">Política de Cookies</a>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { WebSocketServer } from "ws";
 import { insertPropertySchema, insertUserSchema } from "@shared/schema";
-import { obtenerDatosInmueblePorCoordenadas, obtenerDetalleInmueble, obtenerReferenciaCatastralPorCoordenadas } from "./catastro";
+import { obtenerDatosInmueblePorCoordenadas, obtenerDetalleInmueble, registerCatastroListEndpoints, registerCatastroBusquedaEndpoint, obtenerReferenciaCatastralPorCoordenadas } from "./catastro";
 import { requestAerialView } from "./aerial-view";
 
 // Contact form schema
@@ -905,8 +905,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  registerCatastroBusquedaEndpoint(app);
+  registerCatastroListEndpoints(app);
+
   // Exponer la función notifyAllClients para usarla en otras partes de la aplicación
   (app as any).notifyAllClients = notifyAllClients;
 
   return httpServer;
 }
+

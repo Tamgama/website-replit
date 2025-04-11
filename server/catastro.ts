@@ -1,5 +1,7 @@
 import axios from 'axios';
+import { z } from "zod";
 import * as cheerio from 'cheerio';
+import type { Request, Response, Express } from "express";
 
 interface CatastroData {
   referenciaCatastral: string;
@@ -23,6 +25,7 @@ export async function obtenerDetalleInmueble(refcat: string): Promise<CatastroDa
   try {
     console.log(`Consultando detalles para referencia catastral: ${refcat}`);
     const url = `https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCallejero.svc/json/Consulta_DNPRC?RefCat=${refcat}`;
+    console.log(url);
     const headers = { 'User-Agent': 'Mozilla/5.0' };
     const response = await axios.get(url, { headers, timeout: 10000 });
     console.log("Respuesta obtenida, status:", response.status);
@@ -346,4 +349,226 @@ export async function obtenerDatosInmueblePorCoordenadas(lat: number, lng: numbe
     console.log("Datos simulados generados por error:", datosPrueba);
     return datosPrueba;
   }
+}
+
+// Esquema para validar los parámetros de búsqueda
+const busquedaCatastroSchema = z.object({
+  provincia: z.string().min(2),
+  municipio: z.string().min(2),
+  via: z.string().min(2),
+  numero: z.string().min(1)
+});
+
+export async function buscarEnCatastroPorDireccion(req: Request, res: Response) {
+  try {
+    const {
+      provincia,
+      municipio,
+      tipoVia,
+      via,
+      numero,
+      Bloque,
+      Escalera,
+      Planta,
+      Puerta
+    } = req.body;
+
+    if (!provincia || !municipio || !tipoVia || !via || !numero) {
+      return res.status(400).json({
+        success: false,
+        message: "Faltan parámetros obligatorios: provincia, municipio, tipoVia, NombreVia, Numero"
+      });
+    }
+
+    const baseUrl = "https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCallejero.svc/json/ObtenerNumerero";
+
+    const url = `${baseUrl}?Provincia=${encodeURIComponent(provincia)}&Municipio=${encodeURIComponent(municipio)}&TipoVia=${encodeURIComponent(tipoVia)}&NomVia=${encodeURIComponent(via)}&Numero=${encodeURIComponent(numero)}&Bloque=${encodeURIComponent(Bloque || "")}&Escalera=${encodeURIComponent(Escalera || "")}&Planta=${encodeURIComponent(Planta || "")}&Puerta=${encodeURIComponent(Puerta || "")}&Sigla=&Calle=`;
+
+    console.log("URL Catastro Numerero:", url);
+
+    const { data } = await axios.get(url, {
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const resultado = data?.consulta_numereroResult;
+
+    if (!resultado || !Array.isArray(resultado.nump) || resultado.nump.length === 0) {
+      return res.status(404).json({ success: false, message: "No se encontraron resultados" });
+    }
+
+    const propiedades = resultado.nump.map((item: any) => {
+      const numero = item.num?.pnp || null;
+      const referenciaCatastral = (item.pc?.pc1 || "") + (item.pc?.pc2 || "");
+      return {
+        numero,
+        referenciaCatastral,
+        provincia,
+        municipio
+      };
+    });
+
+    return res.status(200).json({ success: true, propiedades });
+  } catch (error) {
+    console.error("Error al buscar en Catastro:", error);
+    return res.status(500).json({ success: false, message: "Error interno al consultar Catastro" });
+  }
+}
+
+// Endpoint Express
+export function registerCatastroBusquedaEndpoint(app: Express) {
+  app.post("/api/catastro/busqueda", buscarEnCatastroPorDireccion);
+}
+
+export async function listarProvincias(req: Request, res: Response) {
+  try {
+    const response = await axios.get(
+      "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCallejero.asmx/ConsultaProvincia",
+      { headers: { "Content-Type": "application/xml" } }
+    );
+
+    const $ = cheerio.load(response.data, { xmlMode: true });
+
+    // Extraer elementos <prov> dentro del XML
+    const provincias: string[] = [];
+    $("prov").each((_, el) => {
+      const texto = $(el).text().trim();
+      if (texto) provincias.push(texto);
+    });
+
+    if (!Array.isArray(provincias) || provincias.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: "No se pudieron extraer las provincias del XML"
+      });
+    }
+
+    res.status(200).json({ success: true, provincias });
+  } catch (error) {
+    console.error("Error al obtener provincias:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al obtener provincias"
+    });
+  }
+}
+export async function listarMunicipios(req: Request, res: Response) {
+  try {
+    const provincia = req.query.provincia?.toString();
+
+    if (!provincia) {
+      return res.status(400).json({ success: false, message: "Falta la provincia" });
+    }
+
+    const url = `https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCallejero.asmx/ConsultaMunicipio?Provincia=${encodeURIComponent(provincia)}&Municipio=`;
+    const { data } = await axios.get(url, {
+      headers: { "Content-Type": "application/xml" }
+    });
+
+    const $ = cheerio.load(data, { xmlMode: true });
+
+    const municipios: string[] = [];
+    $("muni").each((_, el) => {
+      const texto = $(el).text().trim();
+      if (texto) municipios.push(texto);
+    });
+
+    if (municipios.length === 0) {
+      return res.status(404).json({ success: false, message: "No se encontraron municipios" });
+    }
+
+    return res.status(200).json({ success: true, municipios });
+  } catch (error) {
+    console.error("Error al obtener municipios:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener municipios" });
+  }
+}
+
+export async function listarVias(req: Request, res: Response) {
+  try {
+    const provincia = req.query.provincia?.toString();
+    const municipio = req.query.municipio?.toString();
+    const via = req.query.via?.toString();
+
+    if (!provincia || !municipio || !via) {
+      return res.status(400).json({ success: false, message: "Faltan parámetros (provincia, municipio, via)" });
+    }
+
+    const url = `https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCallejero.asmx/ConsultaVia?Provincia=${encodeURIComponent(provincia)}&Municipio=${encodeURIComponent(municipio)}&NombreVia=${encodeURIComponent(via)}&TipoVia=`;
+
+    const { data } = await axios.get(url, {
+      headers: { "Content-Type": "application/xml" }
+    });
+
+    const $ = cheerio.load(data, { xmlMode: true });
+
+    const vias: { nv: string; tv: string }[] = [];
+
+    $("calle").each((_, el) => {
+      const nv = $(el).find("nv").text().trim();
+      const tv = $(el).find("tv").text().trim();
+      if (nv && tv) {
+        vias.push({ nv, tv });
+      }
+    });
+
+    if (vias.length === 0) {
+      return res.status(404).json({ success: false, message: "No se encontraron vías" });
+    }
+
+    return res.status(200).json({ success: true, vias });
+  } catch (error) {
+    console.error("Error al obtener vías:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener vías" });
+  }
+}
+
+
+export async function listarNumeros(req: Request, res: Response) {
+  try {
+    const provincia = req.query.provincia?.toString();
+    const municipio = req.query.municipio?.toString();
+    const numero = req.query.numero?.toString();
+    const via = req.query.via?.toString();
+    const tipoVia = req.query.tipoVia?.toString();
+
+    if (!provincia || !municipio || !via) {
+      return res.status(400).json({ success: false, message: "Faltan parámetros (provincia, municipio, via)" });
+    }
+
+    const url = `https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCallejero.asmx/ConsultaNumero?Provincia=${encodeURIComponent(provincia)}&Municipio=${encodeURIComponent(municipio)}&NomVia=${encodeURIComponent(via)}&TipoVia=${encodeURIComponent(tipoVia)}`;
+
+    const { data } = await axios.get(url, {
+      headers: { "Content-Type": "application/xml" }
+    });
+
+    const $ = cheerio.load(data, { xmlMode: true });
+
+    const vias: { nv: string; tv: string }[] = [];
+
+    $("calle").each((_, el) => {
+      const nv = $(el).find("nv").text().trim();
+      const tv = $(el).find("tv").text().trim();
+      if (nv && tv) {
+        vias.push({ nv, tv });
+      }
+    });
+
+    if (vias.length === 0) {
+      return res.status(404).json({ success: false, message: "No se encontraron vías" });
+    }
+
+    return res.status(200).json({ success: true, vias });
+  } catch (error) {
+    console.error("Error al obtener vías:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener vías" });
+  }
+}
+
+
+
+export function registerCatastroListEndpoints(app: Express) {
+  app.get("/api/catastro/provincias", listarProvincias);
+  app.get("/api/catastro/municipios", listarMunicipios);
+  app.get("/api/catastro/vias", listarVias);
+  app.get("/api/catastro/numeros", listarNumeros);
 }

@@ -1,5 +1,4 @@
 import { useLocation } from "wouter";
-// import data venuesWidget from "@/components/data venuesWidget";
 
 const SimpleHeroSection = () => {
   const [, setLocation] = useLocation();
@@ -24,15 +23,6 @@ const SimpleHeroSection = () => {
               </span>
             </div>
           </div>
-          
-          {/* Widget de data venues
-          <div className="w-full max-w-2xl mx-auto mt-6 bg-white p-4 rounded-lg shadow-lg">
-            <data venuesWidget
-              targetId="dv-widget-promurcia"
-              color="#0066CC"
-              alt={true}
-            />
-          </div> */}
           
           {/* Confianza */}
           <div className="w-full max-w-xl mx-auto mt-4 text-center">
